@@ -67,10 +67,11 @@ class pheno_simulator():
                                                            nsites=nsites, siteDistribution = self.siteDistribution, 
                                                            random_BS = random_BS)
 
-    def sim_pops(self, theta_alleles = 0.5, nclusts=1, prop_causal = 0.1):
+    def sim_pops(self, theta_alleles = 0.5, nclusts=1, shared = 0.5):
         self.theta_alleles = theta_alleles
         # Clusts are distinct ancestries
         self.nclusts = nclusts
+        self.shared = shared
         
 
         # Simualte allele frequencies for common ancestor and for genetic clusters
@@ -78,7 +79,7 @@ class pheno_simulator():
             rng = self.rng,
             theta_alleles = self.theta_alleles,
             nclusts=self.nclusts, nSNPs = self.nSNPs,
-            prop_causal = prop_causal)
+            shared = shared)
 
         # Sample ancesrties for each individual Dim = (nsubjects,)
         self.df["subj_ancestries"] = assign_clusters(
@@ -95,16 +96,20 @@ class pheno_simulator():
         self.nSNPS_post_filter = self.genotypes.shape[1]
         self.df = pd.concat([self.df, pcs], axis=1)
 
-    def sim_pheno(self, h2Hom=0.5, h2Het=[0], alpha = -1, phenobasename = "Y", nphenos = 2):
+    def sim_pheno(self, h2Hom=0.5, h2Het=[0], alpha = -1, phenobasename = "Y", nphenos = 2, prop_causal = [0.1, 0.1], shared = 0.5):
         self.h2Hom = h2Hom
         self.h2Het = h2Het
         self.alpha = alpha
+        self.prop_causal = prop_causal
+        self.shared = shared
         (self.df, self.causals, self.homo_eff, self.het_eff)  = sim_pheno(rng = self.rng,
                                                                           genotypes = self.genotypes,
                                                                           df = self.df,
                                                                           h2Hom = self.h2Hom,
                                                                           h2Het = self.h2Het,
                                                                           alpha = self.alpha,
+                                                                          prop_causal = prop_causal,
+                                                                          shared = shared,
                                                                           phenoname = phenobasename + "0")
         for i in range(1, nphenos): 
             (temp, __1, __2, __3)  = sim_pheno(rng = self.rng,
@@ -113,6 +118,8 @@ class pheno_simulator():
                                                h2Hom = self.h2Hom,
                                                h2Het = self.h2Het,
                                                alpha = self.alpha,
+                                               prop_causal = [0.1, 0.1],
+                                               shared = 0.5,
                                                phenoname = phenobasename + str(i))
             self.df[phenobasename + str(i)] = temp[phenobasename + str(i)]
 

@@ -6,9 +6,8 @@ Created on Thu Mar 16 13:08:24 2023
 @author: christian
 """
 import numpy as np
-import pandas as pd
 
-def sim_pop_alleles(rng, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, shared_causal= 0.8, shared_noncausal = 0.8, prop_causal = 0.1, maf_filter = 0.1) :
+def sim_pop_alleles(rng, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, shared = 0.5) :
     """
     Simulate the allele frequencies for a common ancestor and for all genetic clusters taking into account if the causal snps are shared or not.
 
@@ -22,15 +21,9 @@ def sim_pop_alleles(rng, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, sh
         number of genetic clusters. The default is 1.
     nSNPs : int, optional
         Number of snps to simulate for the genome. The default is 1000.
-    shared_causal : floa64
-        specify the proportion of causal snps shared between genetic clusters, between 0 and 1.
-    shared_noncasaul : float64
-        specify the proportion of non-causal snps shared between genetic clusters, between 0 and 1.
-    prop_causal : float64
-        specify the proportion snps that are causal.
-    maf_filter : float64
-        between 0 and 0.5, the minimum allowable maf for causal snps
-
+    shared : floa64
+        specify the proportion of SNPs for which the allele frequency will be resampled using the second item of theta_alleles.
+        The rest will be sampled with the second item in theta_alleles
     Returns
     -------
     tuple with (nSNPs x 1) numpy array where the first column corresponds to the common ancestral frequencies,
@@ -39,14 +32,27 @@ def sim_pop_alleles(rng, theta_alleles = [0.8, 0.2], nclusts=1, nSNPs = 1000, sh
     incides of causal snps
 
     """
+
+
     rng = np.random.default_rng(rng)
     theta = theta_alleles
     # simulate ancestral frequency of each SNP, dimensions = (SNPs,)
     ancest_freqs = rng.uniform(low=0.1, high=0.9, size=nSNPs)
-    cluster_freqs = rng.beta(ancest_freqs * (1- theta) / theta,
-                                      (1-ancest_freqs) *
-                                      (1-theta)/theta,
-                                      size=(nclusts, nSNPs))
+
+    shared_indices = range(round(nSNPs * shared))
+    
+    # sample shared cluster allele frequencies
+    cluster_freqs_shared = rng.beta(ancest_freqs[shared_indices] * (1- theta[1]) / theta[1],
+                                    (1-ancest_freqs[shared_indices]) *
+                                    (1-theta[1])/theta[1],
+                                    size=(nclusts, len(shared_indices)))
+    cluster_freqs_nonShared = rng.beta(ancest_freqs[~np.isin(np.arange(nSNPs), shared_indices)] * (1- theta[0]) / theta[0],
+                                        (1-ancest_freqs[~np.isin(np.arange(nSNPs), shared_indices)]) *
+                                        (1-theta[0])/theta[0],
+                                        size=(nclusts, nSNPs - len(shared_indices)))
+    # Concatenate shared and nonShared so that they have same columns and add to the number of rows
+    cluster_freqs = np.concatenate((cluster_freqs_shared, cluster_freqs_nonShared), axis = 1)
+
     return ancest_freqs, cluster_freqs 
 
 

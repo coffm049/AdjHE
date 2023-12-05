@@ -27,8 +27,6 @@ def sim_genos(rng, cluster_frequencies, subject_ancestries):
     clusters_differ : bool, optional
         should clusters have different means or should all the variations in the phenotype take place in non-cluster informative regions.
         The default is False.
-    prop_causal : float, optional
-        between 0 and 1 specifyin the number of SNPs that are causal. The default is 0.1.
 
 
     Returns

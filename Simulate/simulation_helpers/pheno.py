@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
 
 
-
-def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", causals= None):
+# Need to add shared here then select causal from shared and nonshared 
+def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", causals= None, prop_causal= [0.1, 0.1], shared = 0.5):
     """
     
 
@@ -27,14 +27,17 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
         dataframe containing all covariates and phenotypes.
     alpha : float, optional
         exponent for the dependency between SNP frequency and effect size. The default is -1
-    prop_causal : float, optional
-        if causals are unspecified, then specify the number of SNPs to randomly select as causal. The default is 0.1.
+    prop_causal : list, optional
+        if causals are unspecified, then specify the number of SNPs to randomly select as causal from shared and unshared regions. The default is 0.1.
     clusters_differ : bool, optional
         do clusters have different heritabilities? The default is False.
     maf_filter : float, optional
         filter out SNPs with MAF < maf_filter and MAF > 1-maf_filter. This is only used when user did not specify causals explicitly. The default is 0.1.
     vizualize : boolean, optional
         plot the distribution of causal effects. The default is False.
+    shared: float64, optional
+        proportion of SNPs that are shared between clusters. This should be exactly the same number that was used to simulate the allele
+        frequencies. The default is 0.5.
     Returns
     -------
     Gene_contrib : array 
@@ -48,9 +51,16 @@ def sim_pheno(rng, genotypes, df, h2Hom, h2Het, alpha = -1, phenoname = "Y0", ca
    
     # sample causal SNPs if user didn't specify their own specific string of causal SNPs
     if causals is None :
-        prop_causal = 0.1
-        nCausal = int(nSNPs * prop_causal)
-        causals = rng.choice(nSNPs, nCausal, replace=False, shuffle=False)
+        nCausal_shared = int(nSNPs * prop_causal[0] * shared)
+        nCausal_nonShared = int(nSNPs * prop_causal[1] * (1- shared))
+
+        shared_idx = range(int(nSNPs * shared))
+        nonshared_idx = range(int(nSNPs * shared), nSNPs)
+
+        shared_causals = np.sort(rng.choice(shared_idx, nCausal_shared, replace=False, shuffle=False))
+        nonshared_causals = np.sort(rng.choice(nonshared_idx, nCausal_nonShared, replace=False, shuffle=False))
+        causals = np.concatenate((shared_causals, nonshared_causals))
+        nCausal = len(causals)
     
     Xcausal = np.matrix(genotypes[:, causals])
     freqs = np.asarray(np.mean(Xcausal, axis = 0)/2).flatten()
