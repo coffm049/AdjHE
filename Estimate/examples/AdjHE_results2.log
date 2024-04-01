@@ -9,14 +9,10 @@ root - INFO - RV: None
 root - INFO - Beginning estimation
 root - DEBUG - ['abcd_site']
 root - DEBUG - First Momment formula is Head_size ~ abcd_site + pc_1 + pc_2 + pc_3
+numexpr.utils - INFO - Note: NumExpr detected 24 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+numexpr.utils - INFO - NumExpr defaulting to 8 threads.
 root - WARNING - Variance estimate is negative setting as absolute value
-root - DEBUG - Started6273.597911846
-root - DEBUG - Ended6275.800761482
-root - DEBUG - 2.2028496359998826
+root - DEBUG - Started1807985.544303787
+root - DEBUG - Ended1807990.063770701
+root - DEBUG - 4.519466914003715
 root - DEBUG - First Momment formula is Head_size ~ abcd_site + pc_1 + pc_2 + pc_3 + pc_1 + pc_2 + pc_3 + pc_4 + pc_5
-root - WARNING - Variance estimate is negative setting as absolute value
-root - DEBUG - Started6275.802131901
-root - DEBUG - Ended6277.969116929
-root - DEBUG - 2.1669850279995444
-root - INFO - Writing results to Estimate/examples/AdjHE_results2
-root - INFO - Finished

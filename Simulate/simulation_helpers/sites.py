@@ -39,9 +39,15 @@ def sim_sites(rng, nsubjects = 1000, nsites=1, siteDistribution="EQUAL", random_
         # For equal assignment (n needs to be divisible by nsites * nclusts)
         Groups = np.repeat(
             np.arange(start=1, stop=nsites + 1), int(nsubjects/nsites))
-    else:
+    elif siteDistribution == "UNEQUAL" :
+        # only works for 2 sites  and nsubjects must be divisible by 4
+        Groups = np.repeat([1,1,1,2], int(nsubjects/ 4))
+
+    elif siteDistribution == "RANDOM" :
         # For unequal assignment sample randomly from uniform
         Groups = rng.choice(nsites, size= nsubjects, replace=True)
+    else :
+        print("Specified site distribution is not recognized") 
 
         # Simulate site effects (will rescale to desired contribution later)
     if random_BS :

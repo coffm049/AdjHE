@@ -10,7 +10,7 @@ import pytest
 def C1S1() :
     rng = np.random.default_rng(123)
     sim = pheno_simulator(rng = rng, nsubjects= 1000)
-    sim.sim_sites(nsites =25)
+    sim.sim_sites(nsites =25, siteDistribution="UNEQUAL")
     sim.sim_pops(nclusts= 1)
     sim.sim_genos()
     sim.sim_pheno(h2Hom = 0.5, h2Het= [0], alpha = 0)

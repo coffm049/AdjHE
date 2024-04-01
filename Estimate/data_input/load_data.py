@@ -79,8 +79,20 @@ def data_loader(file) :
 def load_tables(ids, list_of_files) :
     # load the rest of the data
     for file in list_of_files :
-        if file != None: 
-            newdf = data_loader(file)
+        if file != None:
+            if file.endswith(".npy") :
+                # NEED TO LOAD IDS, and match them to FID/ IID
+                newIds = pd.read_csv("/panfs/jay/groups/31/rando149/coffm049/ABCD/Workflow/02_Phenotypes/FCsTopo/FC.files", header = None)
+                newIds.columns = ["IID"]
+                newdf = pd.DataFrame(np.load(file))
+                newdf.columns = newdf.columns.astype(str)
+                newdf["IID"] = newIds['IID'].str[4:]
+                newdf["IID"] = newdf["IID"].str[0:4] + "_" + newdf["IID"].str[4:]
+                # this works becauses the phenofile is the first in the list
+                newdf = pd.merge(ids, newdf, on = ["IID"], how = "inner")
+                newdf = newdf[['FID', 'IID'] + [col for col in newdf.columns if col not in ['FID', 'IID']]]
+            else :
+                newdf = data_loader(file)
             # merge always using the left keys such that it always aligns with the GRM
             ids = pd.merge(ids, newdf, on = ["FID", "IID"], how = "left")
     return ids
@@ -127,8 +139,12 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = 
     print("Phenos + Covars:", df.columns.tolist())
    
     # Get the phenotype names
-    phenotypes = pd.read_table(pheno_file, sep = "\s+", header = 0, nrows= 0).columns.tolist()
-    phenotypes.remove("FID")
-    phenotypes.remove("IID")
+    if pheno_file.endswith(".npy") :
+        phenotypes = pd.DataFrame(np.load(pheno_file)).columns.astype(str)
+
+    else : 
+        phenotypes = pd.read_table(pheno_file, sep = "\s+", header = 0, nrows= 0).columns.astype(str)
+        phenotypes.remove("FID")
+        phenotypes.remove("IID")
     return df, GRM, phenotypes 
 
