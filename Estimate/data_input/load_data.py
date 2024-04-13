@@ -143,7 +143,7 @@ def load_everything(prefix, pheno_file, cov_file=None, PC_file=None, k=0, ids = 
         phenotypes = pd.DataFrame(np.load(pheno_file)).columns.astype(str)
 
     else : 
-        phenotypes = pd.read_table(pheno_file, sep = "\s+", header = 0, nrows= 0).columns.astype(str)
+        phenotypes = pd.read_table(pheno_file, sep = "\s+", header = 0, nrows= 0).columns.astype(str).tolist()
         phenotypes.remove("FID")
         phenotypes.remove("IID")
     return df, GRM, phenotypes 
